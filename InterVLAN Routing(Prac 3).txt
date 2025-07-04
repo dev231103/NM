@@ -1,0 +1,112 @@
+Cisco Packet Tracer, 2960 Switches, 3650 Multilayer Switch
+----------------------------------------------------------------------
+
+
+Switch 0
+en
+conf t
+vlan 10
+name Sales
+exit
+vlan 20
+name Marketing
+exit
+
+
+Switch 1
+en
+conf t
+vlan 10
+name Sales
+vlan 20
+name Marketing
+exit
+
+----------------------------------------
+
+Switch 0 and switch 1 type same commands on both
+
+interface fa0/1
+ switchport mode access
+ switchport access vlan 10
+
+interface fa0/2
+ switchport mode access
+ switchport access vlan 20
+
+
+-------------------------------------------
+
+
+Switch 0
+
+int g0/1
+switchport mode trunk
+end
+wri mem
+
+-----------------------------------------------
+Step 3: Perform Multilayer Switch Configurations
+
+Multilayer Switch 0
+
+Switch#conf t 
+
+vlan 10 
+name Sales 
+vlan 20 
+name Marketing 
+---------------------------------------------------
+Step 4: Configure VTP on the Multilayer Switch
+
+Multilayer Switch 0
+
+int vlan 10 
+ip address 192.168.1.1 255.255.255.0 
+int vlan 20 
+ip address 192.168.2.1 255.255.255.0 
+int g1/0/1  
+switchport mode trunk 
+
+----------------------------------------------------------
+
+Step 5: Configuration Management on Switch to Multilayer Switch 
+
+Switch 0
+
+conf t 
+int g0/2 
+switchport trunk 
+switchport mode trunk 
+end 
+wri mem
+
+-----------------------------------------------------------------------
+Step 6: Perform ip routing on Multilayer Switch 
+
+Multilayer Switch 0
+
+configure terminal
+ip routing
+end
+write memory
+show ip route
+
+----------------------------------------------------------------------------
+
+Step 6: Ping
+
+PC0
+
+ping 192.168.1.6
+
+ping 192.168.2.6
+
+
+
+Pc3
+ping 192.168.2.5
+
+ping 192.168.1.5
+
+---------------------------------------------------------------------------------

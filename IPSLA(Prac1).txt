@@ -1,0 +1,145 @@
+
+=== Step 1: Configure Interfaces on All Routers ===
+
+--- Router R1 ---
+enable
+configure terminal
+hostname R1
+
+interface Loopback0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+
+interface Serial0/0
+ ip address 209.165.201.2 255.255.255.252
+ clock rate 128000
+ bandwidth 128
+ no shutdown
+
+interface Serial0/1
+ ip address 209.165.202.130 255.255.255.252
+ bandwidth 128
+ no shutdown
+exit
+
+--- Router ISP1 (R2) ---
+enable
+configure terminal
+hostname ISP1
+
+interface Loopback0
+ ip address 209.165.200.254 255.255.255.255
+ no shutdown
+
+interface Loopback1
+ ip address 209.165.201.30 255.255.255.255
+ no shutdown
+
+interface Serial0/0
+ ip address 209.165.201.1 255.255.255.252
+ bandwidth 128
+ no shutdown
+
+interface Serial0/1
+ ip address 209.165.200.225 255.255.255.252
+ clock rate 128000
+ bandwidth 128
+ no shutdown
+exit
+
+--- Router ISP2 (R3) ---
+enable
+configure terminal
+hostname ISP2
+
+interface Loopback0
+ ip address 209.165.200.254 255.255.255.255
+ no shutdown
+
+interface Loopback1
+ ip address 209.165.202.158 255.255.255.255
+ no shutdown
+
+interface Serial0/0
+ ip address 209.165.202.129 255.255.255.252
+ clock rate 128000
+ bandwidth 128
+ no shutdown
+
+interface Serial0/1
+ description ISP2 --> ISP1
+ ip address 209.165.200.226 255.255.255.252
+ bandwidth 128
+ no shutdown
+exit
+
+=== Step 2: Configure EIGRP and Static Routes ===
+
+--- ISP1 (R2) ---
+router eigrp 1
+ network 209.165.200.224 0.0.0.3
+ network 209.165.201.0 0.0.0.31
+ no auto-summary
+exit
+ip route 192.168.1.0 255.255.255.0 209.165.201.2
+
+--- ISP2 (R3) ---
+router eigrp 1
+ network 209.165.200.224 0.0.0.3
+ network 209.165.202.128 0.0.0.31
+ no auto-summary
+exit
+ip route 192.168.1.0 255.255.255.0 209.165.202.130
+
+--- R1 (Initial Default Route) ---
+ip route 0.0.0.0 0.0.0.0 209.165.201.1
+
+=== Step 3: Verify Basic Connectivity ===
+ping 209.165.200.254 source 192.168.1.1
+ping 209.165.201.30 source 192.168.1.1
+ping 209.165.202.158 source 192.168.1.1
+show ip route
+
+=== Step 4: Configure IP SLA and Tracking on R1 ===
+configure terminal
+
+ip sla 11
+ icmp-echo 209.165.201.30
+ frequency 10
+exit
+
+ip sla schedule 11 life forever start-time now
+
+ip sla 22
+ icmp-echo 209.165.202.158
+ frequency 10
+exit
+
+ip sla schedule 22 life forever start-time now
+
+track 1 ip sla 11 reachability
+ delay down 10 up 1
+exit
+
+track 2 ip sla 22 reachability
+ delay down 10 up 1
+exit
+
+no ip route 0.0.0.0 0.0.0.0 209.165.201.1
+ip route 0.0.0.0 0.0.0.0 209.165.201.1 2 track 1
+ip route 0.0.0.0 0.0.0.0 209.165.202.129 3 track 2
+
+=== Step 5: Verify IP SLA Failover ===
+
+--- On ISP1 ---
+interface Loopback1
+shutdown
+
+--- On R1 ---
+show ip sla statistics
+show ip route | begin Gateway
+debug ip routing
+
+--- Re-enable Loopback1 ---
+interface Loopback1
+no shutdown

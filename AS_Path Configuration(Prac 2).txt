@@ -1,0 +1,121 @@
+Requirements: GNS3, Serial Connection, 2 Routers (c2691), 2 wires Connection
+
+! =========================================================
+! STEP 1 – BASELINE INTERFACES
+! =========================================================
+
+! --- SanJose (R1) ---
+enable
+configure terminal
+hostname SanJose
+interface Loopback0
+ ip address 10.1.1.1 255.255.255.0
+interface Serial0/0
+ ip address 192.168.1.5 255.255.255.0
+ no shutdown
+end
+
+! --- ISP (R2) ---
+enable
+configure terminal
+hostname ISP
+interface Loopback0
+ ip address 10.2.2.1 255.255.255.0
+interface Serial0/0
+ ip address 192.168.1.6 255.255.255.0
+ no shutdown
+interface Serial0/1
+ ip address 172.24.1.6 255.255.255.0
+ no shutdown
+end
+
+! --- Customer (R3) ---
+enable
+configure terminal
+hostname Customer
+interface Loopback0
+ ip address 10.3.3.1 255.255.255.0
+interface Serial0/1
+ ip address 172.24.1.5 255.255.255.0
+ no shutdown
+end
+
+
+
+
+! =========================================================
+! STEP 2 – BGP ON SanJose (R1)
+! =========================================================
+enable
+configure terminal
+router bgp 100
+ neighbor 192.168.1.6 remote-as 300
+ network 10.1.1.0 mask 255.255.255.0
+end
+
+
+! =========================================================
+! STEP 3 – BGP ON ISP (R2)
+! =========================================================
+enable
+configure terminal
+router bgp 300
+ neighbor 192.168.1.5 remote-as 100
+ neighbor 172.24.1.5 remote-as 65000
+ network 10.2.2.0 mask 255.255.255.0
+end
+
+
+
+! =========================================================
+! STEP 4 – BGP ON Customer (R3)
+! =========================================================
+enable
+configure terminal
+router bgp 65000
+ neighbor 172.24.1.6 remote-as 300
+ network 10.3.3.0 mask 255.255.255.0
+end
+
+
+! =========================================================
+! STEP 5 – INITIAL VERIFICATION
+! =========================================================
+! --- On ISP (R2) ---
+show ip bgp neighbor
+show ip route
+
+! --- On SanJose (R1) ---
+show ip route
+ping 10.3.3.1 source Loopback0
+show ip bgp
+
+! --- On Customer (R3) ---
+show ip route
+
+
+
+! =========================================================
+! STEP 6 – STRIP PRIVATE‑AS FROM UPSTREAM VIEW (ISP)
+! =========================================================
+! --- On ISP (R2) ---
+enable
+configure terminal
+router bgp 300
+ neighbor 192.168.1.5 remove-private-as
+end
+
+
+! =========================================================
+! STEP 7 – FINAL CHECKS
+! =========================================================
+! --- On SanJose (R1) ---
+ping 10.3.3.1 source Loopback0
+show ip bgp
+
+! --- On ISP (R2) ---
+show ip route
+
+! --- On Customer (R3) ---
+show ip route
+

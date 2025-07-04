@@ -1,0 +1,259 @@
+Router: 2691
+
+
+! =========================================================
+! STEP 1 – BASELINE INTERFACES
+! =========================================================
+
+! --- ISP (R1) ---
+enable
+configure terminal
+hostname ISP
+interface Loopback0
+ ip address 192.168.100.1 255.255.255.0
+interface Serial0/0
+ ip address 192.168.1.5 255.255.255.252
+ no shutdown
+interface Serial0/1
+ ip address 192.168.1.1 255.255.255.252
+ no shutdown
+end
+
+! --- Airoli (R2) ---
+enable
+configure terminal
+hostname Airoli
+interface Loopback0
+ ip address 172.16.64.1 255.255.255.0
+interface Serial0/0
+ ip address 192.168.1.6 255.255.255.252
+ no shutdown
+interface Serial0/1
+ ip address 192.16.1.1 255.255.255.0
+ no shutdown
+end
+
+! --- Thane (R3) ---
+enable
+configure terminal
+hostname Thane
+interface Loopback0
+ ip address 172.16.32.1 255.255.255.0
+interface Serial0/0
+ ip address 192.168.1.2 255.255.255.252
+ clock rate 128000
+ no shutdown
+interface Serial0/1
+ ip address 192.16.1.1 255.255.255.0
+ no shutdown
+end
+
+
+! =========================================================
+! STEP 2 – IGP CONFIGURATION (EIGRP)
+! =========================================================
+
+! --- Airoli (R2) ---
+enable
+configure terminal
+router eigrp 1
+ network 172.16.0.0
+end
+
+! --- Thane (R3) ---
+enable
+configure terminal
+router eigrp 1
+ network 172.16.0.0
+end
+
+
+
+! =========================================================
+! STEP 3 – IBGP (AS 64512) CONFIGURATION
+! =========================================================
+
+! --- Airoli (R2) ---
+enable
+configure terminal
+router bgp 64512
+ neighbor 172.16.32.1 remote-as 64512
+ neighbor 172.16.32.1 update-source Loopback0
+end
+
+! --- Thane (R3) ---
+enable
+configure terminal
+router bgp 64512
+ neighbor 172.16.64.1 remote-as 64512
+ neighbor 172.16.64.1 update-source Loopback0
+end
+
+
+
+
+! =========================================================
+! STEP 4 – EBGP (ISP ↔ Airoli & Thane) CONFIGURATION
+! =========================================================
+
+! --- ISP (R1) ---
+enable
+configure terminal
+router bgp 200
+ neighbor 192.168.1.6 remote-as 64512
+ neighbor 192.168.1.2 remote-as 64512
+ network 192.168.100.0
+end
+
+! --- Airoli (R2) ---
+enable
+configure terminal
+router bgp 64512
+ neighbor 192.168.1.5 remote-as 200
+ network 192.16.0.0
+exit
+ip route 172.16.0.0 255.255.0.0 null0
+end
+
+! --- Thane (R3) ---
+enable
+configure terminal
+router bgp 64512
+ neighbor 192.168.1.1 remote-as 200
+ network 192.16.0.0
+exit
+ip route 172.16.0.0 255.255.0.0 null0
+end
+
+
+
+! =========================================================
+! STEP 5 – NEXT-HOP-SELF FOR IBGP STABILITY
+! =========================================================
+
+! --- Airoli (R2) ---
+enable
+configure terminal
+router bgp 64512
+ neighbor 172.16.32.1 next-hop-self
+end
+
+! --- Thane (R3) ---
+enable
+configure terminal
+router bgp 64512
+ neighbor 172.16.64.1 next-hop-self
+end
+
+
+
+
+! =========================================================
+! STEP 6 – APPLY MED PREFERENCES (ROUTE-MAP)
+! =========================================================
+
+! --- Airoli (R2) ---
+enable
+configure terminal
+route-map PRIMARY_T1_MED_OUT permit 10
+ set metric 50
+exit
+router bgp 64512
+ neighbor 192.168.1.5 route-map PRIMARY_T1_MED_OUT out
+end
+
+! --- Thane (R3) ---
+enable
+configure terminal
+route-map SECONDARY_T1_MED_OUT permit 10
+ set metric 75
+exit
+router bgp 64512
+ neighbor 192.168.1.1 route-map SECONDARY_T1_MED_OUT out
+end
+
+
+
+
+
+! =========================================================
+! STEP 7 – ORIGINATE DEFAULT ROUTE FROM ISP
+! =========================================================
+
+! --- ISP (R1) ---
+enable
+configure terminal
+router bgp 200
+ neighbor 192.168.1.6 default-originate
+ neighbor 192.168.1.2 default-originate
+exit
+interface Loopback10
+ ip address 10.0.0.1 255.255.255.0
+end
+
+
+! =========================================================
+! STEP 8 – CLEAR BGP SESSIONS
+! =========================================================
+
+! --- ISP (R1) ---
+clear ip bgp *
+
+! --- Airoli (R2) ---
+clear ip bgp * soft
+
+! --- Thane (R3) ---
+clear ip bgp * soft
+
+
+! =========================================================
+! STEP 9 – VERIFICATION TESTS
+! =========================================================
+
+! --- ISP (R1) ---
+show ip bgp
+show ip route
+ping 172.16.64.1
+ping 172.16.64.1 source 192.168.100.1
+ping 172.16.32.1 source 192.168.100.1
+ping 172.16.1.2 source 192.168.100.1
+
+! --- Airoli (R2) ---
+show ip bgp
+show ip bgp neighbors
+show ip route
+trace 10.0.0.1
+
+! --- Thane (R3) ---
+show ip bgp
+show ip route
+ping 192.168.100.1 source 172.16.32.1
+trace 10.0.0.1
+
+
+
+! =========================================================
+! STEP 10 – LINK FAILURE SIMULATION (ISP → Airoli)
+! =========================================================
+
+! --- ISP (R1) ---
+enable
+configure terminal
+interface Serial0/0
+ shutdown
+end
+
+! --- Airoli (R2) ---
+show ip route
+
+! --- Thane (R3) ---
+show ip route
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,72 @@
+Practical 1 :- To configure IP SLA Tracking and Path Control
+Step 1 :- Configure Interfaces and IPs.
+Step 2 :- Configure Routing
+Step 3 :- Configure IP SLA on R1
+Step 4 :- Configure Tracking and Static Routes
+Step 5 :- Verification
+
+
+Practical 2 :- To use AS_Path Configuration
+Step 1 :- Prepare the routers. Take router c291
+Step 2 :- Configure the hostname and interface addresses
+Step 3 :- Configure BGP
+Step 4 :- Remove the private AS
+Step 5 :- Use the AS_PATH attribute to filter routes
+
+
+Practical 3 :- Configuring IBGP and EBGP Sessions, Local Preference and MED.
+Step 1 :- Configure interface addresses
+Step 2 :- Configure EIGRP
+Step 3 :- Configure IBGP and verify BGP neighbors
+Step 4 :- Configure EBGP
+Step 5 :- View BGP summary output
+Step 6 :- Verify which path the traffic takes
+Step 7 :- Configure the BGP next-hop-self feature
+Step 8 :- Set BGP local preference
+Step 9 :- Set BGP MED
+Step 10 :- Establish a default route
+
+
+
+Practical 4 :- To secure the Management Plane
+Step 1 :- Configure Loopbacks and assign addresses
+Step 2 :- Configure static routes
+Step 3 :- Secure management access
+Step 4 :- Configure enhanced username password security
+Step 5 :- Enabling AAA RADIUS Authentication with Local User for Backup
+Step 6 :- Enabling secure remote management using SSH
+
+
+
+Practical 5 :- To Configure and Verify Path Control using PBR.
+Step 1 :- Configure loopbacks and assign addresses
+Step 2 :- Configure basic EIGRP
+Step 3 :- Verify the current path
+Step 4 :- Configure PBR to provide path control
+Step 5 :- Test the policy
+
+
+Practical 6 :- IP Service Level Agreements and Remote SPAN in a Campus Environment 
+Step 1 :- Assign IP addresses
+Step 2 :- Connect a router to switch at FastEthernet 0/3 to UP the status of FastEthernet 0/0
+Step 3 :- Open Router CLI to check the status of the FastEthernet 0/0 port
+Step 4 :- Assign Default Gateway to PC0 10.0.0.100 & Default Gateway to PC1 10.0.0.100
+Step 5 :- On Command Prompt of PC0
+>ipconfig
+>ping 20.0.0.1
+On PC 1 
+>ipconfig
+>ping 10.0.1
+
+
+Practical 7 :- To implement inter VLAN-routing
+Step 1 :- Perform Basic Switch Configuration
+Step 2 :- Configure VTP on the Switches
+Step 3 :- Configure trunking ports
+Step 4 :- Perform Multilayer Switch Configurations
+Step 5 :- Configure VTP on the Multilayer Switch
+Step 6 :- Configuration Management on Switch to Multilayer Switch
+Step 7 :- Perform ip routing on Multilayer Switch
+
+
+

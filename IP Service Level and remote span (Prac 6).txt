@@ -1,0 +1,117 @@
+Cisco
+Switch (2960-24TT),Router (2620XM),PCs (PC1& PC2),3 copper straight-through 
+wires,2 PC-PT. 
+
+Switch-Router(Connection should be with Fa0/3)
+--------------------------------------------------------------------------
+
+PC 0(Add ip address in PC -->Config-->Fa0)
+
+10.0.0.1 
+
+------------------------------------------
+
+PC 1(Fa0)
+20.0.0.1
+
+-----------------------------------------
+
+Go to switch-->config---> VLAN Database
+Vlan Number: 2
+VLAN Name: server
+
+ADD
+
+conf t  
+interface FastEthernet0/0  
+switchport access vlan 2 
+exit
+ 
+-------------------------------
+
+Go to switch-->config---> VLAN Database
+Vlan Number: 3
+VLAN Name: client
+
+ADD
+
+conf t  
+interface FastEthernet0/2 
+switchport access vlan 3
+exit
+ 
+
+-----------------------------------------
+
+Switch
+
+int fa0/3
+switchport mode trunk
+------------------------------------
+Router
+
+en
+show ip interface brief
+---------------------------------
+Step: Create Sub interfaces
+
+Router 
+
+en
+int fa0/0
+exit
+
+int fa 0/0.1
+
+encapsulation dot1Q 2
+ip add 10.0.0.100 255.0.0.0
+exit
+------------------------------
+Router
+
+conf t
+int fa 0/0.2 
+encapsulation dot1Q 3
+ip add 20.0.0.100 255.0.0.0
+exit
+---------------------------------
+
+Step: Allow communication between pC and router
+
+Router
+
+conf t
+router rip
+network 10.0.0.0
+network 20.0.0.0
+
+-------------------------------------------
+Open PC 0 --->Desktop----:>IP Configiration
+
+IPV4: 10.0.0.1
+Subnet: 255.0.0.0
+Default Gateway: 10.0.0.100
+DNS: 0.0.0.0
+
+---------------------------------------
+
+Open PC 1 --->Desktop----:>IP Configiration
+
+IPV4: 20.0.0.1
+Subnet: 255.0.0.0
+Default Gateway: 10.0.0.100
+DNS: 0.0.0.0
+
+---------------------------------------------
+Open PC 0 --->Desktop-->Command Prompt
+
+ipconfig
+
+ping 20.0.0.1
+
+-------------------------------------
+Open PC 1 --->Desktop-->Command Prompt
+
+ipconfig
+
+ping 10.0.0.1

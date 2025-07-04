@@ -1,0 +1,219 @@
+! =========================================================
+! STEP 1 – Configure Loopbacks and Serial Interfaces
+! =========================================================
+
+! --- R1 ---
+hostname R1
+interface Loopback0
+description R1 LAN
+ip address 192.168.1.1 255.255.255.0
+exit
+interface Serial3/0
+description R1 --> R2
+ip address 10.1.1.1 255.255.255.252
+clock rate 128000
+no shutdown
+exit
+end
+
+! --- R2 ---
+hostname R2
+interface Serial3/0
+description R2 --> R1
+ip address 10.1.1.2 255.255.255.252
+no shutdown
+exit
+interface Serial3/1
+description R2 --> R3
+ip address 10.2.2.1 255.255.255.252
+clock rate 128000
+no shutdown
+exit
+end
+
+! --- R3 ---
+hostname R3
+interface Loopback0
+description R3 LAN
+ip address 192.168.3.1 255.255.255.0
+exit
+interface Serial3/1
+description R3 --> R2
+ip address 10.2.2.2 255.255.255.252
+no shutdown
+exit
+end
+
+! =========================================================
+! STEP 2 – Configure Static Routes
+! =========================================================
+
+! --- R1 ---
+ip route 0.0.0.0 0.0.0.0 10.1.1.2
+
+! --- R3 ---
+ip route 0.0.0.0 0.0.0.0 10.2.2.1
+
+! --- R2 ---
+ip route 192.168.1.0 255.255.255.0 10.1.1.1
+ip route 192.168.3.0 255.255.255.0 10.2.2.2
+
+! --- R1 (Tcl script) ---
+foreach address {
+192.168.1.1
+10.1.1.1
+10.1.1.2
+10.2.2.1
+10.2.2.2
+192.168.3.1
+} { ping $address }
+
+! --- R1 ---
+security passwords min-length 10
+enable secret class12345
+
+! =========================================================
+! STEP 3 – Secure Management Access
+! =========================================================
+
+! --- R1 ---
+line console 0
+password ciscoconpass
+exec-timeout 5 0
+login
+logging synchronous
+exit
+line vty 0 4
+password ciscovtypass
+exec-timeout 5 0
+login
+exit
+line aux 0
+no exec
+end
+service password-encryption
+banner motd $Unauthorized access strictly prohibited!$
+
+! --- R3 ---
+security passwords min-length 10
+enable secret class12345
+line console 0
+password ciscoconpass
+exec-timeout 5 0
+login
+logging synchronous
+exit
+line vty 0 4
+password ciscovtypass
+exec-timeout 5 0
+login
+exit
+line aux 0
+no exec
+end
+service password-encryption
+banner motd $Unauthorized access strictly prohibited!$
+
+! =========================================================
+! STEP 4 – Enhanced Username and Password Security
+! =========================================================
+
+! --- R1 ---
+username JR-ADMIN secret class12345
+username ADMIN secret class54321
+line console 0
+login local
+exit
+line vty 0 4
+login local
+end
+
+! --- R3 ---
+username JR-ADMIN secret class12345
+username ADMIN secret class54321
+line console 0
+login local
+exit
+line vty 0 4
+login local
+end
+
+! --- R1 ---
+telnet 10.2.2.2
+
+! =========================================================
+! STEP 5 – Enable AAA with RADIUS and Local Backup
+! =========================================================
+
+! --- R1 ---
+aaa new-model
+radius server RADIUS-1
+ address ipv4 192.168.1.101
+ key RADIUS-1-pa55w0rd
+exit
+radius server RADIUS-2
+ address ipv4 192.168.1.102
+ key RADIUS-2-pa55w0rd
+exit
+aaa group server radius RADIUS-GROUP
+ server name RADIUS-1
+ server name RADIUS-2
+exit
+aaa authentication login default group RADIUS-GROUP local
+aaa authentication login TELNET-LOGIN group RADIUS-GROUP local case
+line vty 0 4
+login authentication TELNET-LOGIN
+exit
+
+! --- R3 ---
+aaa new-model
+radius server RADIUS-1
+ address ipv4 192.168.1.101
+ key RADIUS-1-pa55w0rd
+exit
+radius server RADIUS-2
+ address ipv4 192.168.1.102
+ key RADIUS-2-pa55w0rd
+exit
+aaa group server radius RADIUS-GROUP
+ server name RADIUS-1
+ server name RADIUS-2
+exit
+aaa authentication login default group RADIUS-GROUP local
+aaa authentication login TELNET-LOGIN group RADIUS-GROUP local case
+line vty 0 4
+login authentication TELNET-LOGIN
+exit
+
+! --- R1 ---
+telnet 10.2.2.2
+
+! =========================================================
+! STEP 6 – Enable Secure Remote Management via SSH
+! =========================================================
+
+! --- R1 ---
+ip domain-name ccnasecurity.com
+crypto key zeroize rsa
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+line vty 0 4
+transport input ssh
+end
+show ip ssh
+ssh -l ADMIN 10.2.2.2
+
+! --- R3 ---
+ip domain-name ccnasecurity.com
+crypto key zeroize rsa
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2
+line vty 0 4
+transport input ssh
+end
+show ip ssh
+
+
+-----------------------------------------------
+R1
+ssh-l ADMIN 10.2.2.2

@@ -1,0 +1,241 @@
+! =========================================================
+! STEP 1 – BASIC OSPF CONNECTIVITY (R1-R3)
+! =========================================================
+
+! --- R1 ---
+enable
+configure terminal
+hostname R1
+
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+ ip ospf 1 area 0
+
+interface FastEthernet0/0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+ ip ospf 1 area 0
+exit
+end
+
+! --- R2 ---
+enable
+configure terminal
+hostname R2
+
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+ ip ospf 1 area 0
+
+interface FastEthernet0/0
+ ip address 10.0.0.2 255.255.255.0
+ no shutdown
+ ip ospf 1 area 0
+
+interface FastEthernet0/1
+ ip address 10.0.1.2 255.255.255.0
+ no shutdown
+ ip ospf 1 area 0
+exit
+end
+
+! --- R3 ---
+enable
+configure terminal
+hostname R3
+
+interface Loopback0
+ ip address 3.3.3.3 255.255.255.255
+ ip ospf 1 area 0
+
+interface FastEthernet0/0
+ ip address 10.0.1.3 255.255.255.0
+ no shutdown
+ ip ospf 1 area 0
+exit
+end
+
+! --- Test End-to-End Connectivity ---
+R1# ping 3.3.3.3 source loopback0
+
+! =========================================================
+! STEP 2 – ENABLE MPLS LDP ON R1 AND R3
+! =========================================================
+
+! --- R1 ---
+configure terminal
+router ospf 1
+ mpls ldp autoconfig
+end
+
+! --- R3 ---
+configure terminal
+router ospf 1
+ mpls ldp autoconfig
+end
+
+! --- R2 ---
+show mpls interfaces
+show mpls ldp neighbors
+
+! =========================================================
+! STEP 3 – CONFIGURE BGP VPNv4 PEERING BETWEEN R1 AND R3
+! =========================================================
+
+! --- R1 ---
+configure terminal
+router bgp 1
+ neighbor 3.3.3.3 remote-as 1
+ neighbor 3.3.3.3 update-source Loopback0
+ no auto-summary
+ address-family vpnv4
+  neighbor 3.3.3.3 activate
+exit
+end
+
+! --- R3 ---
+configure terminal
+router bgp 1
+ neighbor 1.1.1.1 remote-as 1
+ neighbor 1.1.1.1 update-source Loopback0
+ no auto-summary
+ address-family vpnv4
+  neighbor 1.1.1.1 activate
+exit
+end
+
+! --- Verify VPNv4 Peering ---
+R1# show bgp vpnv4 unicast all summary
+
+! =========================================================
+! STEP 4 – CONFIGURE CUSTOMER SITE 1 (R4) UNDER VRF
+! =========================================================
+
+! --- R4 ---
+enable
+configure terminal
+hostname R4
+
+interface Loopback0
+ ip address 4.4.4.4 255.255.255.255
+ ip ospf 2 area 2
+
+interface FastEthernet0/0
+ ip address 192.168.1.4 255.255.255.0
+ ip ospf 2 area 2
+ no shutdown
+exit
+end
+
+! --- R1 ---
+configure terminal
+
+interface FastEthernet0/1
+ no shutdown
+ ip address 192.168.1.1 255.255.255.0
+
+ip vrf RED
+ rd 4:4
+ route-target both 4:4
+
+interface FastEthernet0/1
+ ip vrf forwarding RED
+ ip address 192.168.1.1 255.255.255.0
+ ip ospf 2 area 2
+exit
+end
+
+! --- Verify Routing ---
+R1# show run interface f0/1
+R1# show ip route
+R1# show ip route vrf RED
+
+! =========================================================
+! STEP 5 – CONFIGURE CUSTOMER SITE 2 (R5) UNDER VRF
+! =========================================================
+
+! --- R5 ---
+enable
+configure terminal
+hostname R5
+
+interface Loopback0
+ ip address 6.6.6.6 255.255.255.255
+ ip ospf 2 area 2
+
+interface FastEthernet0/0
+ ip address 192.168.2.6 255.255.255.0
+ ip ospf 2 area 2
+ no shutdown
+exit
+end
+
+! --- R3 ---
+configure terminal
+
+interface FastEthernet0/1
+ no shutdown
+ ip address 192.168.2.1 255.255.255.0
+
+ip vrf RED
+ rd 4:4
+ route-target both 4:4
+
+interface FastEthernet0/1
+ ip vrf forwarding RED
+ ip address 192.168.2.1 255.255.255.0
+ ip ospf 2 area 2
+exit
+end
+
+! --- Verify ---
+R3# show run interface f0/1
+R3# show ip route vrf RED
+
+! =========================================================
+! STEP 6 – REDISTRIBUTE OSPF <-> BGP IN VRF RED
+! =========================================================
+
+! --- R1 ---
+configure terminal
+router bgp 1
+ address-family ipv4 vrf RED
+  redistribute ospf 2
+exit
+router ospf 2
+ redistribute bgp 1 subnets
+exit
+end
+
+! --- R3 ---
+configure terminal
+router bgp 1
+ address-family ipv4 vrf RED
+  redistribute ospf 2
+exit
+router ospf 2
+ redistribute bgp 1 subnets
+exit
+end
+
+! =========================================================
+! STEP 7 – FINAL VERIFICATION
+! =========================================================
+
+! --- On R1 ---
+show ip route
+show ip route vrf RED
+show ip bgp vpnv4 vrf RED
+
+! --- On R3 ---
+show ip bgp vpnv4 vrf RED
+show ip route vrf RED
+
+! --- On R4 ---
+show ip route
+
+! --- On R5 ---
+show ip route
+
+! --- On R3 ---
+ping 6.6.6.6
