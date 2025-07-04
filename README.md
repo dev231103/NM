@@ -11,3 +11,63 @@
 | 9 | c7200-adventerprisek9-mz.153-3.XB12.image  |[Download here](https://mega.nz/#!RVkGzQYD!dYiDd82B8Ze7JFIE4anZs7JlPGZVgDd0dlGA_43IDt4) |
 | 10 | c7200-adventerprisek9-mz.152-4.S6.image  |[Download here](https://mega.nz/#!1RsSzYba!29sbqg4sfA4--Vg66noI5w2fHLzIyAXSEEeHAoqKRAI) |
 | 11 | c7200-adventerprisek9-mz.124-24.T5.image  |[Download here](https://mega.nz/#!RZtA0SwD!XBjqI5Dkrienz7tHaYg601Dwq-ypAqWZv8Ut3mFuKoI) |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+| Prac. No | Name                                     | Router Image                         |
+|----------|------------------------------------------|--------------------------------------|
+| 1        | IPSLA                                    | 3725                                 |
+| 2        | AS_PATH                                  | 2691                                 |
+| 3        | IBGP EBGP LOCAL PREF MED                | 2691                                 |
+| 4        | Secure management plane                  | 7200                                 |
+| 5        | PBR                                      | 3725                                 |
+| 6        | IPSLA and remote span in campus environment | 2960 switch, 2620 Router             |
+| 7        | Inter-VLAN Routing                       | 3650 Multilayer switch, 2960 switch |
+| 8        | MPLS and VRF                             | 3725                                 |
