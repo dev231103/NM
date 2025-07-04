@@ -15,6 +15,37 @@
 
 
 
+# SUPPORT ME -- 🚩💲🙏
+
+### 🌟 Love my "Cisco Images for GNS3 and EVE-NG" repo? It's your one-stop solution for all vendor images, helping newbies and pros alike to simulate labs and upgrade skills hands-on. Your support means the world to me! If you'd like to show appreciation, consider buying me a coffee ☕️ or sending your best wishes. Thanks for being awesome! 
+
+<a href="https://www.buymeacoffee.com/hegdepavankumar" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+---
+
+# Free and Paid Learning Resources: [Claim now](https://buymeacoffee.com/hegdepavankumar/extras)
+
+<br> 
+
+# ⚠️ Note: 📢 Some Images are removed! After testing it will be added soon!! Meanwhile, Appreciate your Patience ‼️ --> Thank you!🙏
+
+###  Important: Please visit the provided links for valuable information.
+
+<br>
+
+| Name | Link |
+|----------|----------|
+| Join Telegram Group   | [click here](https://t.me/resourcehub1)   |
+| All Images Username/Password   | [click here](https://shorturl.at/dpAS5)   |
+| EVE-NG Qemu Images Passwords   | [click here](https://shorturl.at/oHS12)   |
+| QEMU-Image-Namings             | [click here](https://shorturl.at/koqIR)   | 
+
+<br>
+
+Dive into a diverse array of routers, switches, and appliances, including Cisco, Fortigate, Palo Alto, Sophos, and more. Whether you're a seasoned professional or a learning enthusiast, our repository provides a one-stop solution for a comprehensive hands-on experience. Stay ahead in your networking journey with regularly updated images and a supportive community. For troubleshooting, updates, or requests for specific images, our dedicated team is here to assist you. Download, simulate, and innovate with confidence!
+
+
+
 
 
 
