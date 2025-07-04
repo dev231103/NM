@@ -1,4 +1,4 @@
-
+router 3725
 === Step 1: Configure Interfaces on All Routers ===
 
 --- Router R1 ---
