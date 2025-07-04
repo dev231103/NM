@@ -53,6 +53,7 @@ Dive into a diverse array of routers, switches, and appliances, including Cisco,
 
 
 
+![image](https://github.com/user-attachments/assets/5adaaf3e-674e-4149-b676-b710134978f9)
 
 
 
